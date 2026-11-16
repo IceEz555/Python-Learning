@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Git และ GitHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #eceae4;
+    --slide: #fbfaf7;
+    --ink: #1d2126;
+    --muted: #5d6670;
+    --line: #d9d5cc;
+    --accent: #1f7a4d;
+    --accent-soft: #e3f1e9;
+    --warn: #a4521a;
+    --warn-soft: #f8eadf;
+    --code-bg: #20252b;
+    --code-ink: #e8eaed;
+    --code-muted: #8b96a1;
+    --code-key: #8fd6a8;
+    --code-str: #f2c48d;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #111316; --slide: #1a1d21; --ink: #e9ebee; --muted: #9aa3ad; --line: #2e333a;
+      --accent: #5cc98d; --accent-soft: #1c3027; --warn: #f0a46c; --warn-soft: #3a2a1f;
+      --code-bg: #0e1013; --code-ink: #e8eaed; --code-muted: #7f8a95; --code-key: #8fd6a8; --code-str: #f2c48d;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #111316; --slide: #1a1d21; --ink: #e9ebee; --muted: #9aa3ad; --line: #2e333a;
+    --accent: #5cc98d; --accent-soft: #1c3027; --warn: #f0a46c; --warn-soft: #3a2a1f;
+    --code-bg: #0e1013; --code-ink: #e8eaed; --code-muted: #7f8a95; --code-key: #8fd6a8; --code-str: #f2c48d;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: "IBM Plex Sans Thai", "Leelawadee UI", "Tahoma", sans-serif;
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+  }
+
+  .deck { width: min(100vw - 32px, (100vh - 72px) * 16 / 9); aspect-ratio: 16 / 9; position: relative; }
+  .slide {
+    position: absolute; inset: 0; background: var(--slide); border-radius: 1.2cqw;
+    container-type: size; display: none; flex-direction: column;
+    padding: 5cqh 6cqw; box-shadow: 0 2px 24px rgb(0 0 0 / .08);
+  }
+  .deck { container-type: inline-size; }
+  .slide.active { display: flex; }
+
+  .kicker { font-size: 1.5cqw; font-weight: 600; color: var(--accent); letter-spacing: .04em; text-transform: uppercase; margin-bottom: 1.2cqh; }
+  h1 { font-size: 5.2cqw; line-height: 1.15; font-weight: 700; }
+  h2 { font-size: 3.4cqw; line-height: 1.2; font-weight: 700; margin-bottom: 3.5cqh; }
+  h3 { font-size: 2cqw; font-weight: 600; margin-bottom: 1cqh; }
+  p, li { font-size: 1.85cqw; line-height: 1.55; }
+  .muted { color: var(--muted); }
+  .small { font-size: 1.5cqw; }
+  ul { list-style: none; display: grid; gap: 1.4cqh; }
+  ul li { padding-left: 2.2cqw; position: relative; }
+  ul li::before { content: ""; position: absolute; left: .3cqw; top: .75em; width: .8cqw; height: .8cqw; border-radius: 50%; background: var(--accent); transform: translateY(-50%); }
+  ol { padding-left: 2.6cqw; display: grid; gap: 1.2cqh; }
+  ol li::marker { color: var(--accent); font-weight: 700; }
+  b, strong { font-weight: 600; }
+
+  code, pre { font-family: "JetBrains Mono", Consolas, monospace; }
+  :not(pre) > code { background: var(--accent-soft); color: var(--ink); padding: .05em .35em; border-radius: .3em; font-size: .9em; }
+  pre {
+    background: var(--code-bg); color: var(--code-ink); border-radius: .9cqw;
+    padding: 2.2cqh 2cqw; font-size: 1.55cqw; line-height: 1.6; white-space: pre; overflow: hidden;
+  }
+  pre .c { color: var(--code-muted); }
+  pre .k { color: var(--code-key); }
+  pre .s { color: var(--code-str); }
+
+  .grow { flex: 1; min-height: 0; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 3cqw; align-items: start; }
+  .cols-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2cqw; }
+  .card { border: 1px solid var(--line); border-radius: .9cqw; padding: 2.4cqh 1.8cqw; background: var(--slide); }
+  .card h3 { color: var(--accent); }
+  .card.warn h3 { color: var(--warn); }
+  .note { background: var(--accent-soft); border-radius: .9cqw; padding: 2cqh 2cqw; font-size: 1.7cqw; line-height: 1.5; }
+  .note.warn { background: var(--warn-soft); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 1.6cqw; }
+  th, td { text-align: left; padding: 1.15cqh 1.2cqw; border-bottom: 1px solid var(--line); vertical-align: top; line-height: 1.4; }
+  th { color: var(--muted); font-weight: 600; font-size: 1.4cqw; }
+  td:first-child { white-space: nowrap; }
+
+  .title-slide { justify-content: center; }
+  .title-slide h1 { font-size: 6.4cqw; margin-bottom: 2.5cqh; }
+  .title-slide .sub { font-size: 2.3cqw; color: var(--muted); max-width: 75%; }
+  .title-slide .bar { width: 8cqw; height: .7cqh; background: var(--accent); border-radius: 1cqh; margin-bottom: 4cqh; }
+
+  .step { display: grid; grid-template-columns: 4.4cqw 1fr; gap: 1.4cqw; align-items: start; }
+  .num { width: 3.6cqw; height: 3.6cqw; border-radius: 50%; background: var(--accent); color: var(--slide); display: grid; place-items: center; font-weight: 700; font-size: 1.8cqw; }
+
+  svg text { font-family: "IBM Plex Sans Thai", "Leelawadee UI", sans-serif; fill: var(--ink); }
+  svg .box { fill: var(--slide); stroke: var(--line); stroke-width: 2; }
+  svg .box-a { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2; }
+  svg .arrow { stroke: var(--accent); stroke-width: 3; fill: none; }
+  svg .arrow-m { stroke: var(--muted); stroke-width: 2.5; fill: none; stroke-dasharray: 8 6; }
+  svg .lbl { fill: var(--accent); font-family: "JetBrains Mono", monospace; font-weight: 600; }
+  svg .lbl-m { fill: var(--muted); font-family: "JetBrains Mono", monospace; }
+  svg .sub { fill: var(--muted); }
+
+  .foot { position: absolute; left: 6cqw; right: 6cqw; bottom: 3cqh; display: flex; justify-content: space-between; font-size: 1.25cqw; color: var(--muted); }
+
+  .controls { position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--muted); }
+  .controls button { background: var(--slide); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 6px 12px; font: inherit; cursor: pointer; }
+  .controls button:hover { border-color: var(--accent); }
+  .progress { position: fixed; top: 0; left: 0; height: 3px; background: var(--accent); transition: width .2s; }
+
+  @media print {
+    @page { size: 1280px 720px; margin: 0; }
+    body { display: block; overflow: visible; background: #fff; }
+    .deck { width: 1280px; aspect-ratio: auto; }
+    .slide { position: relative; display: flex !important; width: 1280px; height: 720px; border-radius: 0; box-shadow: none; break-after: page; }
+    .controls, .progress { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<main class="deck" id="deck">
+
+<!-- 1 -->
+<section class="slide title-slide">
+  <div class="bar"></div>
+  <div class="kicker">บทที่ 8 · Python Learning</div>
+  <h1>Git และ GitHub<br>สำหรับส่งงาน Python</h1>
+  <p class="sub">เก็บประวัติโค้ด ทำงานร่วมกับคนอื่น และส่งการบ้านผ่าน Pull Request</p>
+</section>
+
+<!-- 2 -->
+<section class="slide">
+  <div class="kicker">วันนี้เรียนอะไร</div>
+  <h2>เป้าหมายของคาบนี้</h2>
+  <ul>
+    <li>เข้าใจว่า <b>Git</b> กับ <b>GitHub</b> คืออะไร และต่างกันอย่างไร</li>
+    <li>ตั้งค่า Git ในเครื่องตัวเอง และเชื่อมกับบัญชี GitHub</li>
+    <li>ใช้คำสั่งหลัก <code>clone</code> <code>add</code> <code>commit</code> <code>push</code> <code>pull</code></li>
+    <li>ส่งงานด้วยขั้นตอน <b>Fork → Clone → Commit → Push → Pull Request</b></li>
+    <li>แก้ปัญหาที่เจอบ่อยเองได้</li>
+  </ul>
+  <div class="foot"><span>Git &amp; GitHub</span><span>เวลาประมาณ 2 ชั่วโมง</span></div>
+</section>
+
+<!-- 3 -->
+<section class="slide">
+  <div class="kicker">ทำไมต้องใช้</div>
+  <h2>เคยเจอแบบนี้ไหม?</h2>
+  <div class="cols grow">
+    <pre><span class="c">📁 การบ้าน/</span>
+  hw1.ipynb
+  hw1_final.ipynb
+  hw1_final_v2.ipynb
+  hw1_final_v2_จริงๆ.ipynb
+  hw1_final_ส่งครู_ล่าสุด.ipynb</pre>
+    <div style="display:grid;gap:2.2cqh">
+      <p>ไม่รู้ว่าไฟล์ไหนคือฉบับล่าสุด แก้พังแล้วย้อนกลับไม่ได้ ส่งงานทาง LINE หรืออีเมลแล้วหาย</p>
+      <div class="note"><b>Git</b> จำทุกการเปลี่ยนแปลงให้เรา มีไฟล์เดียว แต่ย้อนดูได้ทุกเวอร์ชัน ว่าใครแก้อะไร เมื่อไหร่</div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 -->
+<section class="slide">
+  <div class="kicker">พื้นฐาน</div>
+  <h2>Git ≠ GitHub</h2>
+  <div class="cols">
+    <div class="card">
+      <h3>Git</h3>
+      <p>โปรแกรมที่ติดตั้ง<b>ในเครื่องเรา</b> ใช้บันทึกประวัติการแก้ไขไฟล์ (version control)</p>
+      <p class="muted small" style="margin-top:1.5cqh">ใช้ได้แม้ไม่มีอินเทอร์เน็ต</p>
+    </div>
+    <div class="card">
+      <h3>GitHub</h3>
+      <p><b>เว็บไซต์</b>ที่เก็บ repository ของ Git ไว้บนอินเทอร์เน็ต ให้แชร์และทำงานร่วมกันได้</p>
+      <p class="muted small" style="margin-top:1.5cqh">เปรียบเหมือน Google Drive สำหรับโค้ด</p>
+    </div>
+  </div>
+  <div class="note" style="margin-top:4cqh">เปรียบเทียบง่ายๆ: Git คือ<b>กล้องถ่ายรูป</b> ส่วน GitHub คือ<b>อัลบั้มออนไลน์</b>ที่เอารูปไปเก็บและแชร์</div>
+</section>
+
+<!-- 5 -->
+<section class="slide">
+  <div class="kicker">คำศัพท์</div>
+  <h2>คำที่ต้องรู้</h2>
+  <table>
+    <tr><th>คำ</th><th>ความหมาย</th></tr>
+    <tr><td><b>Repository (repo)</b></td><td>โฟลเดอร์โปรเจกต์ที่ Git ติดตามประวัติ</td></tr>
+    <tr><td><b>Commit</b></td><td>"จุดบันทึก" ของงาน ณ เวลาหนึ่ง พร้อมข้อความอธิบาย</td></tr>
+    <tr><td><b>Clone</b></td><td>ดาวน์โหลด repo จาก GitHub มาไว้ในเครื่อง</td></tr>
+    <tr><td><b>Push / Pull</b></td><td>ส่ง commit ขึ้น GitHub / ดึงของใหม่ลงมาในเครื่อง</td></tr>
+    <tr><td><b>Fork</b></td><td>คัดลอก repo ของคนอื่นมาเป็นของเราบน GitHub</td></tr>
+    <tr><td><b>Pull Request (PR)</b></td><td>คำขอให้เจ้าของ repo ดูและรับงานของเรา, <b>เราใช้ส่งการบ้าน</b></td></tr>
+  </table>
+</section>
+
+<!-- 6 -->
+<section class="slide">
+  <div class="kicker">Git ทำงานอย่างไร</div>
+  <h2>งานเดินทาง 4 ที่</h2>
+  <div class="grow" style="display:flex;align-items:center">
+    <svg viewBox="0 0 1160 340" width="100%" role="img" aria-label="Working directory ไป staging ด้วย git add, ไป local repo ด้วย git commit, ไป GitHub ด้วย git push, และดึงกลับด้วย git pull">
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--accent)"/></marker>
+        <marker id="ahm" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted)"/></marker>
+      </defs>
+      <rect class="box" x="10" y="90" width="230" height="130" rx="14"/>
+      <text x="125" y="148" text-anchor="middle" font-size="26" font-weight="600">Working Dir</text>
+      <text x="125" y="182" text-anchor="middle" font-size="20" class="sub">ไฟล์ที่เรากำลังแก้</text>
+
+      <rect class="box" x="315" y="90" width="230" height="130" rx="14"/>
+      <text x="430" y="148" text-anchor="middle" font-size="26" font-weight="600">Staging</text>
+      <text x="430" y="182" text-anchor="middle" font-size="20" class="sub">เลือกไฟล์ที่จะบันทึก</text>
+
+      <rect class="box" x="620" y="90" width="230" height="130" rx="14"/>
+      <text x="735" y="148" text-anchor="middle" font-size="26" font-weight="600">Local Repo</text>
+      <text x="735" y="182" text-anchor="middle" font-size="20" class="sub">ประวัติในเครื่อง</text>
+
+      <rect class="box-a" x="925" y="90" width="225" height="130" rx="14"/>
+      <text x="1037" y="148" text-anchor="middle" font-size="26" font-weight="600">GitHub</text>
+      <text x="1037" y="182" text-anchor="middle" font-size="20" class="sub">บนอินเทอร์เน็ต</text>
+
+      <line class="arrow" x1="244" y1="155" x2="308" y2="155" marker-end="url(#ah)"/>
+      <text x="277" y="72" text-anchor="middle" font-size="20" class="lbl">git add</text>
+      <line class="arrow" x1="549" y1="155" x2="613" y2="155" marker-end="url(#ah)"/>
+      <text x="582" y="72" text-anchor="middle" font-size="20" class="lbl">git commit</text>
+      <line class="arrow" x1="854" y1="155" x2="918" y2="155" marker-end="url(#ah)"/>
+      <text x="887" y="72" text-anchor="middle" font-size="20" class="lbl">git push</text>
+
+      <path class="arrow-m" d="M1037,224 C1037,310 125,310 125,230" marker-end="url(#ahm)"/>
+      <text x="580" y="300" text-anchor="middle" font-size="20" class="lbl-m">git pull (ดึงของใหม่ลงมา)</text>
+    </svg>
+  </div>
+</section>
+
+<!-- 7 -->
+<section class="slide">
+  <div class="kicker">เตรียมเครื่อง</div>
+  <h2>ติดตั้งและตั้งค่า (ทำครั้งเดียว)</h2>
+  <div class="cols grow">
+    <div style="display:grid;gap:2.4cqh;align-content:start">
+      <div class="step"><div class="num">1</div><p>สมัครบัญชีที่ <b>github.com</b> (ใช้อีเมลที่เข้าถึงได้จริง)</p></div>
+      <div class="step"><div class="num">2</div><p>ติดตั้ง <b>Git</b> จาก <b>git-scm.com</b> กด Next ตามค่าเริ่มต้นได้เลย</p></div>
+      <div class="step"><div class="num">3</div><p>เปิด Terminal (หรือ Git Bash) แล้วบอก Git ว่าเราคือใคร</p></div>
+    </div>
+    <div style="display:grid;gap:2cqh;align-content:start">
+<pre><span class="c"># ใช้ชื่อและอีเมลเดียวกับบัญชี GitHub</span>
+<span class="k">git</span> config --global user.name <span class="s">"Somchai Jaidee"</span>
+<span class="k">git</span> config --global user.email <span class="s">"you@example.com"</span>
+
+<span class="c"># ตรวจว่าติดตั้งสำเร็จ</span>
+<span class="k">git</span> --version</pre>
+      <p class="small muted">ใช้ VS Code อยู่แล้ว? เปิด Terminal ได้ด้วย <code>Ctrl + `</code></p>
+    </div>
+  </div>
+</section>
+
+<!-- 8 -->
+<section class="slide">
+  <div class="kicker">ภาพรวมการส่งงาน</div>
+  <h2>เส้นทางการบ้าน 1 ชิ้น</h2>
+  <div class="grow" style="display:flex;align-items:center">
+    <svg viewBox="0 0 1160 400" width="100%" role="img" aria-label="Fork repo ของครูเป็นของเรา, clone ลงเครื่อง, push กลับขึ้น fork, แล้วเปิด Pull Request ไปที่ repo ของครู">
+      <defs>
+        <marker id="ah2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--accent)"/></marker>
+      </defs>
+      <rect class="box-a" x="20" y="30" width="330" height="120" rx="14"/>
+      <text x="185" y="82" text-anchor="middle" font-size="26" font-weight="600">Repo ของครู</text>
+      <text x="185" y="116" text-anchor="middle" font-size="19" class="sub">บน GitHub</text>
+
+      <rect class="box-a" x="810" y="30" width="330" height="120" rx="14"/>
+      <text x="975" y="82" text-anchor="middle" font-size="26" font-weight="600">Repo ของเรา (Fork)</text>
+      <text x="975" y="116" text-anchor="middle" font-size="19" class="sub">บน GitHub</text>
+
+      <rect class="box" x="810" y="260" width="330" height="120" rx="14"/>
+      <text x="975" y="312" text-anchor="middle" font-size="26" font-weight="600">เครื่องของเรา</text>
+      <text x="975" y="346" text-anchor="middle" font-size="19" class="sub">ทำการบ้านที่นี่</text>
+
+      <line class="arrow" x1="354" y1="70" x2="803" y2="70" marker-end="url(#ah2)"/>
+      <text x="578" y="56" text-anchor="middle" font-size="21" class="lbl">① Fork</text>
+
+      <line class="arrow" x1="935" y1="154" x2="935" y2="253" marker-end="url(#ah2)"/>
+      <text x="922" y="212" text-anchor="end" font-size="21" class="lbl">② clone</text>
+
+      <line class="arrow" x1="1015" y1="256" x2="1015" y2="157" marker-end="url(#ah2)"/>
+      <text x="1030" y="212" font-size="21" class="lbl">③ push</text>
+
+      <line class="arrow" x1="803" y1="115" x2="357" y2="115" marker-end="url(#ah2)"/>
+      <text x="578" y="146" text-anchor="middle" font-size="21" class="lbl">④ Pull Request</text>
+
+      <text x="185" y="300" text-anchor="middle" font-size="20" class="sub">ครูตรวจงานและคอมเมนต์</text>
+      <text x="185" y="330" text-anchor="middle" font-size="20" class="sub">ในหน้า Pull Request</text>
+    </svg>
+  </div>
+</section>
+
+<!-- 9 -->
+<section class="slide">
+  <div class="kicker">ขั้นที่ 1</div>
+  <h2>Fork repo ของครู</h2>
+  <div class="cols grow">
+    <ol>
+      <li>เปิดลิงก์ repo <b>Python-Learning</b> ที่ครูให้</li>
+      <li>กดปุ่ม <b>Fork</b> มุมขวาบน</li>
+      <li>กด <b>Create fork</b> โดยไม่ต้องเปลี่ยนอะไร</li>
+      <li>ดูว่าตอนนี้อยู่ที่ <code>github.com/ชื่อเรา/Python-Learning</code></li>
+    </ol>
+    <div class="note">Fork ทำ<b>ครั้งเดียวตลอดคอร์ส</b><br><br>การบ้านทุกชิ้นส่งจาก fork นี้ ไม่ต้อง fork ใหม่ทุกครั้ง</div>
+  </div>
+</section>
+
+<!-- 10 -->
+<section class="slide">
+  <div class="kicker">ขั้นที่ 2</div>
+  <h2>Clone ลงเครื่อง</h2>
+  <div class="cols grow">
+    <div style="display:grid;gap:2cqh;align-content:start">
+      <p>ใน fork ของเรา กดปุ่มสีเขียว <b>Code</b> แล้วคัดลอก URL แบบ HTTPS</p>
+<pre><span class="c"># ไปที่โฟลเดอร์ที่จะเก็บงาน</span>
+<span class="k">cd</span> Desktop
+
+<span class="c"># ดาวน์โหลด repo ลงมา</span>
+<span class="k">git</span> clone https://github.com/<span class="s">ชื่อเรา</span>/Python-Learning.git
+
+<span class="k">cd</span> Python-Learning</pre>
+    </div>
+    <div style="display:grid;gap:2cqh;align-content:start">
+      <div class="note">ครั้งแรกที่ push จะมีหน้าต่างให้ <b>Sign in with browser</b> กดยอมรับได้เลย</div>
+      <div class="note warn">Clone <b>fork ของเรา</b> ไม่ใช่ repo ของครู ไม่อย่างนั้นจะ push ไม่ได้</div>
+    </div>
+  </div>
+</section>
+
+<!-- 11 -->
+<section class="slide">
+  <div class="kicker">ขั้นที่ 3</div>
+  <h2>วางงานให้ถูกที่</h2>
+  <div class="cols grow">
+    <pre>Python-Learning/
+├── 01 Python Basics/
+├── ...
+└── <span class="k">submissions/</span>
+    ├── README.md
+    └── <span class="s">6612345-somchai/</span>     <span class="c">← โฟลเดอร์ของเรา</span>
+        ├── hw01-hello.ipynb
+        └── hw02-variables.ipynb</pre>
+    <div style="display:grid;gap:2cqh;align-content:start">
+      <p>สร้างโฟลเดอร์ <code>submissions/รหัส-ชื่อ</code><br>ใช้ภาษาอังกฤษตัวเล็ก ไม่มีเว้นวรรค</p>
+      <p>ตั้งชื่อไฟล์ <code>hwXX-หัวข้อ.ipynb</code></p>
+      <div class="note warn">แก้ไฟล์ได้<b>เฉพาะในโฟลเดอร์ของตัวเอง</b> ห้ามแก้ไฟล์บทเรียนหรือโฟลเดอร์ของเพื่อน</div>
+    </div>
+  </div>
+</section>
+
+<!-- 12 -->
+<section class="slide">
+  <div class="kicker">ขั้นที่ 4 · หัวใจของ Git</div>
+  <h2>3 คำสั่งที่ใช้ทุกวัน</h2>
+  <div class="cols grow">
+<pre><span class="c"># ดูว่ามีไฟล์ไหนเปลี่ยนบ้าง</span>
+<span class="k">git</span> status
+
+<span class="c"># 1. เลือกไฟล์ที่จะบันทึก</span>
+<span class="k">git</span> add submissions/6612345-somchai/
+
+<span class="c"># 2. บันทึกพร้อมข้อความ</span>
+<span class="k">git</span> commit -m <span class="s">"hw01: hello world"</span>
+
+<span class="c"># 3. ส่งขึ้น GitHub</span>
+<span class="k">git</span> push</pre>
+    <div style="display:grid;gap:2cqh;align-content:start">
+      <div class="card"><h3>add</h3><p class="small">ใส่ของลงกล่อง</p></div>
+      <div class="card"><h3>commit</h3><p class="small">ปิดกล่องและเขียนป้ายว่าข้างในมีอะไร</p></div>
+      <div class="card"><h3>push</h3><p class="small">ส่งกล่องไปไปรษณีย์ (GitHub)</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 13 -->
+<section class="slide">
+  <div class="kicker">เขียนให้ดี</div>
+  <h2>Commit message ที่ดี</h2>
+  <div class="cols">
+    <div class="card warn">
+      <h3>ไม่ดี</h3>
+      <pre style="margin-top:1cqh">update
+แก้
+asdfgh
+final</pre>
+    </div>
+    <div class="card">
+      <h3>ดี</h3>
+      <pre style="margin-top:1cqh">hw01: hello world และ f-string
+hw02: เพิ่มโปรแกรมคำนวณ BMI
+hw02: แก้ TypeError ตอนรับ input
+hw03: ทำข้อ 1-3 เสร็จ</pre>
+    </div>
+  </div>
+  <p class="muted" style="margin-top:3cqh">สูตร: <b>ชื่องาน: ทำอะไรไป</b> สั้นๆ ให้คนอ่านเข้าใจได้ทันที</p>
+</section>
+
+<!-- 14 -->
+<section class="slide">
+  <div class="kicker">ขั้นที่ 5 · ส่งงาน</div>
+  <h2>เปิด Pull Request</h2>
+  <div class="cols grow">
+    <ol>
+      <li>เข้า fork ของเราบน GitHub จะเห็นแถบ <b>Compare &amp; pull request</b> ให้กดที่แถบนั้น</li>
+      <li>เช็คทิศทาง: <code>ครู/main</code> ← <code>เรา/main</code></li>
+      <li>ตั้งชื่อ: <code>[hw01] 6612345 สมชาย</code></li>
+      <li>ติ๊ก checklist ในช่องรายละเอียด แล้วกด <b>Create pull request</b></li>
+    </ol>
+    <div style="display:grid;gap:2cqh;align-content:start">
+      <div class="note">เปิด PR <b>ครั้งเดียว</b> แล้ว push เพิ่มได้เรื่อยๆ commit ใหม่จะเข้า PR เดิมอัตโนมัติ</div>
+      <div class="note">ครูจะคอมเมนต์ในหน้า PR ให้กดดูแท็บ <b>Conversation</b> และ <b>Files changed</b></div>
+    </div>
+  </div>
+</section>
+
+<!-- 15 -->
+<section class="slide">
+  <div class="kicker">ทุกสัปดาห์</div>
+  <h2>ดึงบทเรียนใหม่จากครู</h2>
+  <div class="cols grow">
+    <div style="display:grid;gap:2cqh;align-content:start">
+      <h3>วิธีง่าย: ผ่านเว็บ</h3>
+      <p>ใน fork ของเรา กด <b>Sync fork</b> → <b>Update branch</b><br>แล้วในเครื่องพิมพ์ <code>git pull</code></p>
+    </div>
+    <div style="display:grid;gap:2cqh;align-content:start">
+      <h3>วิธี Terminal</h3>
+<pre><span class="c"># ทำครั้งแรกครั้งเดียว</span>
+<span class="k">git</span> remote add upstream \
+  https://github.com/<span class="s">ชื่อครู</span>/Python-Learning.git
+
+<span class="c"># ทุกครั้งที่ครูอัปเดต</span>
+<span class="k">git</span> pull upstream main
+<span class="k">git</span> push</pre>
+    </div>
+  </div>
+</section>
+
+<!-- 16 -->
+<section class="slide">
+  <div class="kicker">ไม่ชอบ Terminal?</div>
+  <h2>ทางเลือกที่กดได้</h2>
+  <div class="cols-3">
+    <div class="card"><h3>VS Code</h3><p class="small">แท็บ <b>Source Control</b> (Ctrl+Shift+G) กด + เพื่อ add, พิมพ์ข้อความ, กด Commit แล้ว Sync Changes</p></div>
+    <div class="card"><h3>GitHub Desktop</h3><p class="small">โปรแกรมฟรีจาก GitHub เห็นไฟล์ที่เปลี่ยนเป็นภาพ เหมาะกับมือใหม่มาก</p></div>
+    <div class="card"><h3>อัปโหลดบนเว็บ</h3><p class="small">ใน fork กด <b>Add file → Upload files</b> ใช้ได้ฉุกเฉิน แต่ควรฝึกแบบ Git จริงด้วย</p></div>
+  </div>
+  <div class="note" style="margin-top:4cqh">ทุกวิธีทำงานแบบเดียวกันข้างใน คือ add → commit → push</div>
+</section>
+
+<!-- 17 -->
+<section class="slide">
+  <div class="kicker">แก้ปัญหา</div>
+  <h2>เจอ error แบบนี้ ทำอย่างไร</h2>
+  <table>
+    <tr><th>อาการ</th><th>สาเหตุและวิธีแก้</th></tr>
+    <tr><td><code>nothing to commit</code></td><td>ยังไม่ได้ save notebook (Ctrl+S) หรือไฟล์อยู่นอกโฟลเดอร์ repo</td></tr>
+    <tr><td><code>Please tell me who you are</code></td><td>ยังไม่ได้ตั้ง <code>user.name</code> / <code>user.email</code> ดูสไลด์ตั้งค่า</td></tr>
+    <tr><td><code>403 / Permission denied</code></td><td>clone repo ของครูมาแทน fork ให้ clone fork ของตัวเองใหม่</td></tr>
+    <tr><td><code>rejected (fetch first)</code></td><td>บน GitHub มีของใหม่กว่า ให้ <code>git pull</code> ก่อนแล้วค่อย <code>git push</code></td></tr>
+    <tr><td><code>CONFLICT</code></td><td>ไฟล์เดียวกันถูกแก้สองที่ เปิดไฟล์ เลือกเวอร์ชันที่ถูก แล้ว add + commit</td></tr>
+  </table>
+</section>
+
+<!-- 18 -->
+<section class="slide">
+  <div class="kicker">สรุป</div>
+  <h2>Cheat sheet</h2>
+  <div class="cols">
+<pre><span class="c"># ครั้งเดียว</span>
+<span class="k">git</span> config --global user.name <span class="s">"..."</span>
+<span class="k">git</span> config --global user.email <span class="s">"..."</span>
+<span class="k">git</span> clone <span class="s">&lt;url-fork-ของเรา&gt;</span></pre>
+<pre><span class="c"># ทุกครั้งที่ทำการบ้าน</span>
+<span class="k">git</span> pull
+<span class="c"># ... ทำงาน + save ...</span>
+<span class="k">git</span> status
+<span class="k">git</span> add <span class="s">submissions/รหัส-ชื่อ/</span>
+<span class="k">git</span> commit -m <span class="s">"hwXX: ..."</span>
+<span class="k">git</span> push</pre>
+  </div>
+  <p class="muted" style="margin-top:3cqh">ดูประวัติ: <code>git log --oneline</code> · ดูสิ่งที่แก้: <code>git diff</code></p>
+</section>
+
+<!-- 19 -->
+<section class="slide">
+  <div class="kicker">ลงมือทำ · 20 นาที</div>
+  <h2>แบบฝึกหัด: ส่งงานชิ้นแรก</h2>
+  <ol>
+    <li>Fork repo <b>Python-Learning</b> แล้ว clone fork ลงเครื่อง</li>
+    <li>สร้างโฟลเดอร์ <code>submissions/รหัส-ชื่อ/</code></li>
+    <li>สร้าง <code>hw00-hello.ipynb</code> ที่ <code>print()</code> ชื่อ รหัส และสิ่งที่อยากเขียนด้วย Python</li>
+    <li><code>add</code> → <code>commit -m "hw00: hello"</code> → <code>push</code></li>
+    <li>เปิด Pull Request ชื่อ <code>[hw00] รหัส ชื่อ</code></li>
+    <li>แก้ไฟล์อีกนิด แล้ว push อีกรอบ ดูว่า PR อัปเดตเองไหม</li>
+  </ol>
+</section>
+
+<!-- 20 -->
+<section class="slide title-slide">
+  <div class="bar"></div>
+  <div class="kicker">ก่อนกดส่งทุกครั้ง</div>
+  <h2 style="font-size:4.4cqw">Checklist</h2>
+  <ul>
+    <li>รัน notebook ครบทุก cell และ save แล้ว</li>
+    <li>ไฟล์อยู่ใน <code>submissions/รหัส-ชื่อ/</code> เท่านั้น</li>
+    <li>commit message บอกว่าทำอะไร</li>
+    <li><code>git push</code> สำเร็จ และเห็นไฟล์บน GitHub</li>
+    <li>มี Pull Request เปิดอยู่ ชื่อถูกรูปแบบ</li>
+  </ul>
+</section>
+
+</main>
+
+<div class="controls">
+  <button id="prev" aria-label="สไลด์ก่อนหน้า">←</button>
+  <span id="count">1 / 1</span>
+  <button id="next" aria-label="สไลด์ถัดไป">→</button>
+  <button id="theme" aria-label="สลับธีม">◐</button>
+</div>
+
+<script>
+  const slides = [...document.querySelectorAll('.slide')];
+  const count = document.getElementById('count');
+  const progress = document.getElementById('progress');
+  let i = 0;
+  function show(n) {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach((s, k) => s.classList.toggle('active', k === i));
+    count.textContent = (i + 1) + ' / ' + slides.length;
+    progress.style.width = ((i + 1) / slides.length * 100) + '%';
+    history.replaceState(null, '', '#' + (i + 1));
+  }
+  document.getElementById('prev').onclick = () => show(i - 1);
+  document.getElementById('next').onclick = () => show(i + 1);
+  document.getElementById('theme').onclick = () => {
+    const r = document.documentElement;
+    const dark = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    r.dataset.theme = dark ? 'light' : 'dark';
+  };
+  document.addEventListener('keydown', e => {
+    if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); show(i + 1); }
+    if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); show(i - 1); }
+    if (e.key === 'Home') show(0);
+    if (e.key === 'End') show(slides.length - 1);
+  });
+  let x0 = null;
+  document.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener('touchend', e => {
+    if (x0 === null) return;
+    const dx = e.changedTouches[0].clientX - x0;
+    if (Math.abs(dx) > 40) show(i + (dx < 0 ? 1 : -1));
+    x0 = null;
+  });
+  show((parseInt(location.hash.slice(1), 10) || 1) - 1);
+</script>
+</body>
+</html>
